@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>上传文件</title>
+    <link rel="stylesheet" href="plugins/layui/css/layui.css">
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <style>
+    	html,body{
+		    font-size: 12px;
+		}
+		.container {
+			width: 600px;
+			height:400px;
+    		margin: 60px auto;
+			background:#fff;
+			padding:10px;
+			border:1px dashed;
+			border-radius: 20px;
+		}
+		.layui-form{
+			margin: 87px 0 0 96px;
+		}
+		.layui-progress{
+			top:60px;
+			background-color: #E2E2E2;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<form id="videofile_form" class="layui-form" action='#' onsubmit="return false" method="post" enctype="multipart/form-data">
+			<div class="layui-form-item">
+				<label class="layui-form-label">文件上传</label>
+				<input type="file" id="file" />
+			</div>
+			<div class="layui-form-item" id="expert_submit">
+				<div class="layui-input-block">
+					<div class="site-demo-button"
+						style="margin-top: 20px; margin-bottom: 0;">
+						<button class="layui-btn site-demo-active" οnclick="window.active.loading();" data-type="loading">上传</button>
+						<button class="layui-btn layui-btn-primary" id="cleanbu" οnclick="clean.deleteclean();">重置</button>
+					</div>
+				</div>
+			</div>
+		</form>
+		<div class="layui-progress layui-progress-big" lay-showpercent="true"  lay-filter="demo" id="progress" style="display: none">
+			<div class="layui-progress-bar layui-bg-green" lay-percent="0%"></div>
+		</div>
+	</div>
+	
+	<script src="plugins/layui/layui.js"></script>
+    <script src="js/md5.js"></script>
+	<script type="text/javascript">
+	    var i = -1;
+	    var succeed = 0;
+	    var id ;
+	    var Percent=0;
+	    var action=false;    //false检验分片是否上传过(默认); true上传文件       	
+		layui.use(['form','upload','tree', 'layer', 'element', 'table','layedit'],function() {
+			var form = layui.form, 
+			layer = layui.layer,
+			table = layui.table, 
+			layedit = layui.layedit, 
+			element = layui.element;
+			var $ = layui.jquery,upload = layui.upload;
+			
+			$('.layui-btn').on('click', function () {   
+		        var type = $(this).data('type');
+		        active[type] ? active[type].call(this) : '';
+		    });
+		
+		  	//触发事件
+		    window.active = {
+				setPercent: function(){
+				  //设置0%进度
+				  Percent=0;
+			      element.progress('demo', Percent+"%")
+				}, 
+				loading : function() {
+					 var othis = $(this);
+					 $("#progress").attr('style','disply:block');
+					 var DISABLED = 'layui-btn-disabled';
+					 if (othis.hasClass(DISABLED))
+						return; 
+		             var file = $("#file")[0].files[0];  //文件对象
+					 //判断文件是否上传过异步
+		             isUpload(file);
+					 //模拟loading
+					 active.setPercent();
+					 var n = 0, timer = setInterval(function() {
+						 // 请求ajax成功之后 显示进度条
+						 if (Percent>=100 ) {
+							Percent= 100;
+							clearInterval(timer);
+							othis.removeClass(DISABLED);
+						 }
+						 element.progress('demo',Percent+"%");
+						 // n = n + Math.random()*1000;
+					 }, 300 + Math.random()*1000);
+					 othis.addClass(DISABLED);
+				   } 
+			   } 
+		}); 	
+		
+		function isUpload (file) {
+			//构造一个表单，FormData是HTML5新增的
+			var form = new FormData();
+			var r = new FileReader();
+			r.readAsBinaryString(file);
+			$(r).load(function(e){
+				var blob = e.target.result;
+				//测试md5.js文件遇到xxx.iso 500M的文件计算md5计算不出来
+				//网页崩溃，暂时研究测试跟文件大小无关，猜测跟文件数据有关
+				var filemd5 = hex_md5(blob);
+				//var filemd5 = b64_md5(blob);
+				form.append("filemd5", filemd5);  
+				//Ajax提交
+			    $.ajax({
+				      url: "file/isUpload",
+				      type: "POST",
+				      data: form,
+				      async: true,        //异步
+				      processData: false,  //很重要，告诉jquery不要对form进行处理
+				      contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+				      success: function(data){
+					      var uuid = data.fileId;
+						  //flag:1 文件未上传过 2：文件上传部分，3：文件上传成功
+					      if (data.flag == "1") {
+					         //没有上传过文件
+					         var a = upload(file,uuid,filemd5,data.date);
+					      } else if(data.flag == "2") {
+					         //已经上传部分
+					         upload(file,uuid,filemd5,data.date);
+					      }else if(data.flag == "3") {
+					         //文件已经上传过="秒传"
+					         Percent=100;
+					      }
+				      },
+				      error: function(XMLHttpRequest, textStatus, errorThrown) {
+				          alert("服务器出错!");
+				      }
+				})       
+			})                        
+		};
+		
+		/*
+		 * file 文件对象
+		 * uuid 后端生成的uuid
+		 * filemd5 整个文件的md5
+		 * date  文件第一个分片上传的日期(如:20170122)
+		*/
+		function upload (file,uuid,filemd5,date) {
+			name = file.name;        //文件名
+			size = file.size;        //总大小
+			var shardSize = 10*1024*1024, //以10MB为一个分片
+			shardCount = Math.ceil(size / shardSize);  //总片数
+		    if(!action){
+			    i += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
+			}
+            //计算每一片的起始与结束位置
+            var start = i * shardSize,
+            end = Math.min(size, start + shardSize);
+            //构造一个表单，FormData是HTML5新增的
+            var form = new FormData();
+            if(!action){
+	            form.append("action", "check");  //检测分片是否上传
+				console.log("action=check,i="+(i+1));
+            }else{
+	            form.append("action", "upload");  //直接上传分片
+	            form.append("file", file.slice(start,end));  //slice方法用于切出文件的一部分
+				console.log("action=upload,i="+(i+1));
+            }
+            form.append("uuid", uuid);
+            form.append("filemd5", filemd5);
+            form.append("date", date);
+            form.append("name", name);
+            form.append("size", size);
+            form.append("total", shardCount);  //总片数
+            form.append("index", i+1);        //当前是第几片
+            //按大小切割文件段　　
+            var data = file.slice(start, end);
+　　                 var r = new FileReader();
+　                     r.readAsBinaryString(data);
+            $(r).load(function(e){
+	            var blob = e.target.result;
+	            var md5 = hex_md5(blob);
+	            form.append("md5", md5);  
+	            //Ajax提交
+	            $.ajax({
+	            	url: "file/upload",
+	            	type: "POST",
+	            	data: form,
+	            	async: false,        //异步
+	            	processData: false,  //很重要，告诉jquery不要对form进行处理
+	            	contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+	            	success: function(data){
+						if(data!=null){
+							var fileuuid = data.fileId;
+							var flag = data.flag;
+							//flag:1 分片文件未上传过 3：分片文件上传成功，4：分片上传失败，5：大文件上传并合并完成
+							if(flag=="1"){
+								//分片未上传
+								action = true;
+								upload(file,uuid,filemd5,date);
+							}else if(flag=="3"){
+								//分片文件上传成功
+								++succeed;
+								var percent = getPercent(succeed,shardCount);
+								if(!percent){
+								    alert("抱歉，请上传正确视频");
+								    return false;
+								}
+								//继续校验下一个分片(递归调用)
+								action = false;
+								upload(file,uuid,filemd5,date);
+							}else if(flag=="4"){
+								alert("上传失败，请检查网络");        
+								return false;
+							}else if(flag=="5"){
+								//最后一个分片上传完成，并大文件合并也完成
+								Percent=100;
+								return true;
+							}            		
+						}
+			       },error: function(XMLHttpRequest, textStatus, errorThrown) {
+			          alert("抱歉，请重试");
+			       }
+	         	});
+         });             
+      }
+		
+	 function getPercent(num, total) { 
+		num = parseFloat(num); 
+		total = parseFloat(total); 
+		if (isNaN(num) || isNaN(total)) { 
+		    return false; 
+		} 
+	    Percent = (Math.round(num / total * 10000) / 100.00); 
+	    return true;
+	 } 
+   </script>
+
+</body>
+</html>

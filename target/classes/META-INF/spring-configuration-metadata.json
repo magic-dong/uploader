@@ -1,0 +1,108 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties",
+      "name": "asyncTask.executor",
+      "type": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.DruidConfig",
+      "name": "spring.datasource.druid",
+      "sourceMethod": "public javax.sql.DataSource dataSource() ",
+      "type": "javax.sql.DataSource"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis",
+      "type": "com.lzd.upload.config.RedisConfig$RedisProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties",
+      "name": "asyncTask.executor.core-pool-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties",
+      "name": "asyncTask.executor.keep-alive-seconds",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties",
+      "name": "asyncTask.executor.max-pool-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties",
+      "name": "asyncTask.executor.queue-capacity",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.AsyncTaskExecutorConfig$AsyncTaskExecutorProperties",
+      "name": "asyncTask.executor.thread-name-prefix",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.host",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.max-idle",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.max-total",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.max-wait-millis",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.min-evictable-idle-time-millis",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.num-tests-per-eviction-run",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.password",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.port",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.test-on-borrow",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.test-while-idle",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.time-between-eviction-runs-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.lzd.upload.config.RedisConfig$RedisProperties",
+      "name": "spring.redis.timeout",
+      "type": "java.lang.Integer"
+    }
+  ]
+}

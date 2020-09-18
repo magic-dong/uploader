@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzd.upload.dao.FileResDao">
+	<resultMap id="fileResMap" type="com.lzd.upload.utils.file.FileRes">
+		<id property="uuid" column="uuid" />
+		<result property="name" column="name"/>
+		<result property="path" column="path"/>
+		<result property="size" column="size"/>
+		<result property="md5" column="md5"/>
+		<result property="status" column="status"/>
+		<result property="suffix" column="suffix"/>
+		<result property="createTime" column="create_time"/>
+		<result property="updateTime" column="update_time"/>
+	</resultMap>
+	
+	<sql id="where">
+		<where>
+			<if test="md5!=null and md5!=''">
+				AND t.md5=#{md5}
+			</if>
+			<if test="status !=null and status!=''">
+				AND t.status=#{status}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="selectByMd5" resultMap="fileResMap">
+		SELECT
+			t.uuid,
+		    t.name,	
+			t.path,
+			t.size,
+			t.md5,
+			t.status,
+			t.suffix,
+			t.create_time,
+			t.update_time
+		FROM
+			tbl_file t
+		<include refid="where" />
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO tbl_file(
+			uuid,
+			name,
+			path,
+			size,
+			md5,
+			status,
+			suffix,
+			create_time
+		)VALUES(
+			#{uuid},
+			#{name},
+			#{path},
+			#{size},
+			#{md5},
+			#{status},
+			#{suffix},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE tbl_file t
+		SET
+		    t.uuid=#{uuid},
+			t.name=#{name},
+			t.path=#{path},
+			t.size=#{size},
+			t.md5=#{md5},
+			t.status=#{status},
+			t.suffix=#{suffix},
+			t.update_time=#{updateTime}
+	    WHERE
+	        t.uuid=#{uuid}
+	</update>
+</mapper>
